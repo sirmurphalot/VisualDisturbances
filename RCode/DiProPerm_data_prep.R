@@ -1,21 +1,13 @@
 ###############################################
 # Visual Disturbances Film Project
-# Stat Analysis III: Difference between viewings
-# Author: Alexander Murph September 2019
+# Stat Analysis DiProPerm: Difference between viewings
+# Author: Alexander Murph September/November 2019
 # Bucknell University, UNC Chapel Hill
 ###############################################
 
 # Notes: Script takes in data to clean and aggregate information for every
 # (reduction_factor) timepoints.  
-# Preps the data for the DiProPerm calculation.
-
-##########################################################################################################
-##########################################################################################################
-## Update 9/28: Uploading this to GitHub.  If one wishes to recreate these results, they'll need to add ##
-## in their own file paths -- these are specific to my directories.  Data will NOT be released yet.     ##
-## When it is I'll update the file paths so these files will work directly from GitHub                  ##
-##########################################################################################################
-##########################################################################################################
+# Preps the data for the DiProPerm calculation (which is done in python).
 
 # The size of the grouping of frames we wish to consider
 reduction_factor = 10
@@ -50,9 +42,9 @@ film_names_orig = c("holiday1", "holiday2", "lumiere1", "lumiere2",
                     "musketeer1", "musketeer2", "NbyNW1", "NbyNW2", 
                     "playtime11", "playtime12", "playtime21", "playtime22")
 
-#############################################################################
-############ Data removing all NA values associated with saccade ############
-#############################################################################
+#################################################################################
+############ Function removing all NA values associated with saccade ############
+#################################################################################
 
 impute_vector = function(z){
   ## Function that smooths out the NAs with the fixation point that most recently 
@@ -77,6 +69,10 @@ impute_vector = function(z){
   return(z)
 }
 
+
+###############################################################################################################
+############ Gathering all data, imputing it, then writing it in the format required for DiProPerm ############
+###############################################################################################################
 for(film_number in 1:12) {
   # Determine if this is first, or second, viewing
   clip_number = as.character(2 - (film_number %% 2))
@@ -90,7 +86,6 @@ for(film_number in 1:12) {
                        "GazePointIndex")]
   
   my_data$subject = substr(my_data$RecordingName, 1, 3)
-  # my_data = my_data[which(!(my_data$subject %in% c("107", "113", "114", "124"))),]
   my_data = my_data[which(!(my_data$subject %in% c("107"))),]
   
   my_data = my_data[,c("FixationPointX..MCSpx.", "FixationPointY..MCSpx.", "RecordingName",
@@ -108,11 +103,9 @@ for(film_number in 1:12) {
   for(subject in 1:length(instance)) {
     if(all(is.na(my_data[which(my_data$RecordingName == instance[subject]),"FixationPointX..MCSpx."]))){
       print("dropped value")
-      # print(my_data[which(my_data$RecordingName == instance[subject]),"FixationPointX..MCSpx."])
       next
     }
     if(all(is.na(my_data[which(my_data$RecordingName == instance[subject]),"FixationPointY..MCSpx."]))){
-      # print(my_data[which(my_data$RecordingName == instance[subject]),"FixationPointY..MCSpx."])
       print("dropped value")
       next
     }
@@ -129,10 +122,7 @@ for(film_number in 1:12) {
   
   names_1 = paste(my_string_x, 1:(max(my_data$GazePointIndex)), sep = '')
   names_2 = paste(my_string_y, 1:(max(my_data$GazePointIndex)), sep = '')
-  # all_names = c(rbind(names_1, names_2))
-  # all_data = data.frame(t(data_matrix[-1,]))
-  # rownames(all_data) = all_names
-  # colnames(all_data) = paste(film_names_orig[film_number], 1:ncol(all_data), sep = '')
+
   all_names = c(rbind(names_1, names_2))
   all_data = data.frame((data_matrix[-1,]))
   colnames(all_data) = all_names
@@ -146,6 +136,7 @@ for(film_number in 1:12) {
 library(beepr)
 beep(3)
 
+# reformat data then write to csv
 film_names_orig = c("holiday","holiday", "lumiere", "lumiere", 
                     "musketeer", "musketeer", "NbyNW", "NbyNW", 
                     "playtime1", "playtime1", "playtime2", "playtime2")
@@ -157,8 +148,8 @@ for(i in index_list) {
   min_columns = min(ncol(data1), ncol(data2))
   full_data = rbind(as.matrix(data1[,1:min_columns]), as.matrix(data2[,1:min_columns]))
   full_data = as.data.frame(full_data)
-  write.csv(full_data, paste("/Users/murph/Documents/OODA/", film_names_orig[i], ".csv", sep = ''))
-  write.csv(response, paste("/Users/murph/Documents/OODA/", film_names_orig[i+1], "_response.csv", sep = ''))
+  write.csv(full_data, paste("../Data/", film_names_orig[i], ".csv", sep = ''))
+  write.csv(response, paste("../Data/", film_names_orig[i+1], "_response.csv", sep = ''))
 }
 
 
@@ -177,6 +168,74 @@ num_non_tati = nrow(lumiere) + nrow(musketeer) + nrow(NbyNW)
 num_tati = nrow(all_data) - num_non_tati
 response = c(rep(0, times = num_non_tati), rep(1, times = num_tati))
 
-write.csv(all_data, paste("/Users/murph/Documents/OODA/", "all_films", ".csv", sep = ''))
-write.csv(response, paste("/Users/murph/Documents/OODA/", "all_films", "_response.csv", sep = ''))
+write.csv(all_data, paste("../Data/", "all_films", ".csv", sep = ''))
+write.csv(response, paste("../Data/", "all_films", "_response.csv", sep = ''))
 
+
+################################################################################
+############ Repeating process, for distance values (for study III) ############
+################################################################################
+
+nick_names = c("../Data/AverageChange/Hulot_Holiday_Change.csv",
+               "../Data/AverageChange/Lumiere_by_Change.csv",
+               "../Data/AverageChange/Musketeer_by_Change.csv",
+               "../Data/AverageChange/N_by_NW_by_Change.csv",
+               "../Data/AverageChange/playtime1_by_Change.csv",
+               "../Data/AverageChange/playtime2_by_Change.csv")
+
+data_names = c("holiday", "lumiere", "musketeer", 
+               "NbyNW", "playtime1", "playtime2")
+
+holiday = read.csv(nick_names[1])
+names(holiday) = c("TimePoint", "AverageDistances")
+
+lumiere = read.csv(nick_names[2])
+names(lumiere) = c("TimePoint", "AverageDistances")
+
+musketeer = read.csv(nick_names[3])
+names(musketeer) = c("TimePoint", "AverageDistances")
+
+NbyNW = read.csv(nick_names[4])
+names(NbyNW) = c("TimePoint", "AverageDistances")
+
+playtime1 = read.csv(nick_names[5])
+names(playtime1) = c("TimePoint", "AverageDistances")
+
+playtime2 = read.csv(nick_names[6])
+names(playtime2) = c("TimePoint", "AverageDistances")
+
+data_list = list(holiday, lumiere, musketeer, NbyNW, playtime1, playtime2)
+max_index = max(nrow(holiday), nrow(lumiere), nrow(musketeer), nrow(NbyNW), 
+                nrow(playtime1), nrow(playtime2))
+
+full_data = data.frame(TimePoint = rep(1:max_index, times = 6),
+                       AverageDistances = rep(NA, times = (max_index*6)),
+                       Film = rep(data_names, each = max_index))
+
+# gather all data into one data matrix
+for(index in 1:6) {
+  lower_index = ((index - 1)*max_index + 1)
+  upper_index = (nrow(data_list[[index]])) + lower_index - 1
+  full_data$AverageDistances[lower_index:upper_index] = data_list[[index]]$AverageDistances
+}
+
+# impute data and find min cols
+col_vals = c()
+for(value in levels(full_data$Film) ){
+  col_vals = c(col_vals, length(full_data$AverageDistances[which(full_data$Film == value)]))
+  full_data$AverageDistances[which(full_data$Film == value)] = 
+    impute_vector(full_data$AverageDistances[which(full_data$Film == value)])
+}
+min_cols = min(col_vals)
+
+# reformat data, then write it to csv.
+average_distances_data = matrix(rep(NA, times = min_cols), nrow = 1, ncol = min_cols)
+for(value in levels(full_data$Film) ){
+  new_row = matrix(full_data$AverageDistances[which(full_data$Film == value)][1:min_cols], nrow = 1, ncol = min_cols)
+  average_distances_data = rbind(average_distances_data, new_row)
+}
+average_distances_data = as.data.frame(average_distances_data[-1,])
+response = c(1,0,0,0,1,1)
+
+write.csv(average_distances_data, paste("../Data/", "all_distances", ".csv", sep = ''))
+write.csv(response, paste("../Data/", "all_distances", "_response.csv", sep = ''))

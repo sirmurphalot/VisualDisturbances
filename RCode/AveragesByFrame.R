@@ -1,13 +1,13 @@
-# Getting average data by frame for a particular film
-# Author: Alexander Murph
+###############################################
+# Visual Disturbances Film Project
+# Visualization Prep: Averages & Standard deviations
+# Author: Alexander Murph August-November 2019
+# Bucknell University, UNC Chapel Hill
+###############################################
 
-##########################################################################################################
-##########################################################################################################
-## Update 9/28: Uploading this to GitHub.  If one wishes to recreate these results, they'll need to add ##
-## in their own file paths -- these are specific to my directories.  Data will NOT be released yet.     ##
-## When it is I'll update the file paths so these files will work directly from GitHub                  ##
-##########################################################################################################
-##########################################################################################################
+###############################################
+## Notes: Script takes in data prepare for the box-drawing visualization
+###############################################
 
 film_files = c("../Data/Tati Project_Tati test_Hulot_Holiday_mpeg_48 (convert-video-online.com).wmv.tsv",
                "../Data/Tati Project_Tati test_Hulot_Holiday_mpeg_48 (convert-video-online.com).wmv.tsv",
@@ -34,6 +34,7 @@ nick_names = c("../Data/Hulot_Holiday_by_Frames_1.csv",
                "../Data/playtime2_by_Frames_1.csv",
                "../Data/playtime2_by_Frames_2.csv")
 
+# Iterate through the films and gather the averages and standard deviations.
 for(number in 1:12){
 
   film_number = number

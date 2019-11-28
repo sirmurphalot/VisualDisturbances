@@ -1,26 +1,23 @@
 ###############################################
 # Visual Disturbances Film Project
-# Stat Analysis II: TWC Between Films
-# Author: Alexander Murph August 2019
+# Stat Analysis: MSS Between Films
+# Author: Alexander Murph August-November 2019
 # Bucknell University, UNC Chapel Hill
 ###############################################
 
-# Notes: Script takes in data to clean and aggregate information for every
-# (reduction_factor) timepoints.  Then finds the intra-cluster sum of squares
+###############################################
+## Notes: Script takes in data to clean and aggregate information for every
+# (reduction_factor) timepoints.  Then finds the average MSS
 # variation for each aggregated time point.
-# This analysis compares the raw TWC values between films.
-# We use the created datasets to produce the graphs discussed in the paper.
+# This analysis compares the raw MSS values between films.
+# We use the created datasets to produce the graphs discussed in the paper (see bottom of script for graphs).
+## Developer Note: "TWC" was used throughout this code due to earlier analysis.  This should
+# be read as equivalent to "MSS"
+###############################################
 
-##########################################################################################################
-##########################################################################################################
-## Update 9/28: Uploading this to GitHub.  If one wishes to recreate these results, they'll need to add ##
-## in their own file paths -- these are specific to my directories.  Data will NOT be released yet.     ##
-## When it is I'll update the file paths so these files will work directly from GitHub                  ##
-##########################################################################################################
-##########################################################################################################
 
 # The size of the grouping of frames we wish to consider
-reduction_factor = 10
+reduction_factor = 1
 
 # The files needed, and the file names to which we will save
 film_files = c("../Data/Tati Project_Tati test_Hulot_Holiday_mpeg_48 (convert-video-online.com).wmv.tsv",
@@ -37,9 +34,9 @@ nick_names = c("../Data/WithinSS/Hulot_Holiday_WithinSS_full.csv",
                "../Data/WithinSS/playtime1_WithinSS_full.csv",
                "../Data/WithinSS/playtime2_WithinSS_full.csv")
 
-################################################################
-############ Data allowing for only single clusters ############
-################################################################
+#################################################################################
+############ Data allowing for only single clusters; MSS Calculation ############
+#################################################################################
 
 for(film_number in 1:6) {
   # Determine if this is first, or second, viewing
@@ -79,10 +76,15 @@ for(film_number in 1:6) {
     
     temp_row = data.frame(TWC = NA)
     
-    kframe <- kmeans(temp_data[which(!is.na(temp_data$FixationPointX..MCSpx.)),
-                               c("FixationPointX..MCSpx.", "FixationPointY..MCSpx.")], 
+    if(nrow(as.matrix(temp_data[which(!is.na(temp_data$FixationPointX..MCSpx.)),
+                                   c("FixationPointX..MCSpx.", "FixationPointY..MCSpx.")])) == 0) {
+      next
+    }
+    kframe <- kmeans(as.matrix(temp_data[which(!is.na(temp_data$FixationPointX..MCSpx.)),
+                               c("FixationPointX..MCSpx.", "FixationPointY..MCSpx.")]), 
                      centers = 1)
-    temp_row$TWC = kframe$tot.withinss
+    temp_row$TWC = kframe$tot.withinss / nrow(temp_data[which(!is.na(temp_data$FixationPointX..MCSpx.)),
+                                                        c("FixationPointX..MCSpx.", "FixationPointY..MCSpx.")])
     
     if(anyNA(temp_row)) {
       # I realize this will work very poorly if the first frame doesn't have any
@@ -105,10 +107,13 @@ for(film_number in 1:6) {
   # It is possible that we did not have enough data to perform kmeans on the remaining
   # observations, so we put in this if catch.
   if(!(length(which(!is.na(temp_data$FixationPointX..MCSpx.))) == 0 )){
+    print("got here")
+    print(length(which(!is.na(temp_data$FixationPointX..MCSpx.))))
     kframe <- kmeans(temp_data[which(!is.na(temp_data$FixationPointX..MCSpx.)),
                                c("FixationPointX..MCSpx.", "FixationPointY..MCSpx.")], 
                      centers = 1)
-    temp_row$TWC = kframe$tot.withinss
+    temp_row$TWC = kframe$tot.withinss / nrow(temp_data[which(!is.na(temp_data$FixationPointX..MCSpx.)),
+                                                        c("FixationPointX..MCSpx.", "FixationPointY..MCSpx.")])
     new_data = rbind(new_data, temp_row)
   }
   
@@ -120,9 +125,9 @@ for(film_number in 1:6) {
 library(beepr)
 beep(3)
 
-#########################################################
-############## Comparing TWC between films ##############
-#########################################################
+#########################################################################
+############## Comparing MSS between films; visualizations ##############
+#########################################################################
 
 data_names = c("holiday", "lumiere", "musketeer", 
                "NbyNW", "playtime1", "playtime2")
@@ -158,35 +163,41 @@ for(index in 1:6) {
   full_data$TotalWithinSS[lower_index:upper_index] = data_list[[index]]$TotalWithinSS
 }
 
-ggplot(full_data, aes(x=TimePoint, y=TotalWithinSS, group=Film)) +
-  geom_line(aes(color=as.factor(Film))) + labs(color = "Film") + 
-  ggtitle("WithinSS for each film, First Viewings") + 
-  xlab("TimePoint (in groups of 100)") + xlim(0,75)
-
 # Pulling apart the time series
-new_full_data_1 = data.frame(TimePoint = rep(1:75, times = 3),
-                             TotalWithinSS = rep(NA, times = 3*75),
-                             Film = rep(data_names[1:3], each = 75))
-new_full_data_2 = data.frame(TimePoint = rep(1:75, times = 3),
-                             TotalWithinSS = rep(NA, times = 3*75),
-                             Film = rep(data_names[4:6], each = 75))
+new_full_data_1 = data.frame(TimePoint = rep(1:max_index, times = 3),
+                             TotalWithinSS = rep(NA, times = 3*max_index),
+                             Film = rep(data_names[1:3], each = max_index))
+new_full_data_2 = data.frame(TimePoint = rep(1:max_index, times = 3),
+                             TotalWithinSS = rep(NA, times = 3*max_index),
+                             Film = rep(data_names[4:6], each = max_index))
 for(index in 1:3) {
-  lower_index = ((index - 1)*75 + 1)
-  upper_index = lower_index + 75 - 1
-  new_full_data_1$TotalWithinSS[lower_index:upper_index] = data_list[[index]]$TotalWithinSS[1:75]
+  lower_index = ((index - 1)*max_index + 1)
+  upper_index = lower_index + max_index - 1
+  new_full_data_1$TotalWithinSS[lower_index:upper_index] = data_list[[index]]$TotalWithinSS[1:max_index]
 }
 for(index in 1:3) {
-  lower_index = ((index - 1)*75 + 1)
-  upper_index = lower_index + 75 - 1
-  new_full_data_2$TotalWithinSS[lower_index:upper_index] = data_list[[(index+3)]]$TotalWithinSS[1:75]
+  lower_index = ((index - 1)*max_index + 1)
+  upper_index = lower_index + max_index - 1
+  new_full_data_2$TotalWithinSS[lower_index:upper_index] = data_list[[(index+3)]]$TotalWithinSS[1:max_index]
 }
 
 
-ggplot(new_full_data_1, aes(x = TimePoint, y = TotalWithinSS)) + 
-  geom_line(aes(color = as.factor(Film))) + 
-  facet_grid(Film ~ .) + theme(legend.position = "none") + ylim(0,4.5e+08)
+ggplot(new_full_data_1, aes(x = TimePoint, y = TotalWithinSS)) +
+  geom_line(aes(color = as.factor(Film))) + labs(y ="MSS") +
+  facet_grid(Film ~ .) + theme(legend.position = "none", panel.background = element_blank()) + ylim(0,190000) + 
+  scale_color_manual(values=c("red", "green", "blue")) 
 ggplot(new_full_data_2, aes(x = TimePoint, y = TotalWithinSS)) + 
-  geom_line(aes(color = (as.factor(Film)))) + 
-  facet_grid(Film ~ .) + theme(legend.position = "none") + 
-  scale_color_manual(values=c("turquoise3", "steelblue3", "magenta2")) + ylim(0,4.5e+08)
+  geom_line(aes(color = (as.factor(Film)))) + labs(y ="MSS") +
+  facet_grid(Film ~ .) + theme(legend.position = "none", panel.background = element_blank()) + ylim(0,190000) + 
+  scale_color_manual(values=c("turquoise3", "steelblue3", "magenta2")) 
+
+
+# Drawing boxplots for analysis
+my.bp <- ggplot(data=rbind(new_full_data_1, new_full_data_2), aes(y= TotalWithinSS, x=as.factor(Film), fill = as.factor(Film)) ) # Creates boxplots
+my.bp <- my.bp + geom_boxplot() # Adds color
+my.bp <- my.bp +  ylab("MSS") + xlab("Films") # Adds kaveks
+my.bp <- my.bp + scale_fill_manual(values=c("red", "green", "blue", 
+                                            "turquoise3", "steelblue3", "magenta2"))
+my.bp <- my.bp + theme(legend.position="none", panel.background = element_blank()) + coord_flip()
+my.bp
 
