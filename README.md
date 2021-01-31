@@ -18,7 +18,7 @@ If one wishes to recreate these results, they'll need to add in their own file p
 Packages Required
 ============
 
-R packages: ggplot2, beepr
+R packages: ggplot2, beepr <br>
 python packages: pygame, csv, matplotlib, diproperm
 
 Citation
