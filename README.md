@@ -1,5 +1,5 @@
 Visual Disturbances
-----
+============
 
 **author**: `Alexander Murph`
 
