@@ -23,6 +23,7 @@ python packages: pygame, csv, matplotlib, diproperm
 
 Citation
 ============
-Faden, Eric, et al. “Mr. Hulot’s Invisible Gorilla: Jacques Tati and Inattentional Blindness.” <em>Projections</em>, Summer 2021. 
+
+Faden, E., Mitchel, A., Murph, A., Myers, T., and Ryan, N. C. (2021). Mr. Hulot’s Invisible Gorilla, <em>Projections</em>, 15(2), 1-29. 
 
 
