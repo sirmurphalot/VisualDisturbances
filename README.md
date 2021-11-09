@@ -15,8 +15,7 @@ If one wishes to recreate these results, they'll need to add in their own file p
 R packages: `ggplot2`, `beepr` <br>
 python packages: `pygame`, `csv`, `matplotlib`, `diproperm`
 
-Citation
-============
+## Citation
 
 Faden, E., Mitchel, A., Murph, A., Myers, T., and Ryan, N. C. (2021). Mr. Hulot’s Invisible Gorilla, <em>Projections</em>, 15(2), 1-29. 
 
