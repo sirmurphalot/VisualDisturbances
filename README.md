@@ -20,4 +20,4 @@ Citation
 
 Faden, E., Mitchel, A., Murph, A., Myers, T., and Ryan, N. C. (2021). Mr. Hulot’s Invisible Gorilla, <em>Projections</em>, 15(2), 1-29. 
 
-**code author:**: `Alexander Murph`
+**code author:** `Alexander Murph`
